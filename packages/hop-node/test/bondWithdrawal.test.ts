@@ -1,6 +1,6 @@
 import Logger from 'src/logger'
 import { Chain } from 'src/constants'
-import { User, prepareAccount, waitForEvent } from './helpers'
+import { User, waitForEvent } from './helpers'
 import { isL1, wait } from 'src/utils'
 import { privateKey } from './config'
 import { startWatchers } from 'src/watchers/watchers'
@@ -44,7 +44,6 @@ describe('bondWithdrawal', () => {
         logger.log(label)
         const user = new User(privateKey)
         logger.log('preparing account')
-        await prepareAccount(user, sourceNetwork, TOKEN)
         const recipient = await user.getAddress()
         logger.log('starting watchers')
         const { stop, watchers } = startWatchers({ networks: path })

@@ -4,10 +4,9 @@ import {
   User,
   generateUsers,
   getBalances,
-  prepareAccounts,
   waitForEvent
 } from './helpers'
-import { faucetPrivateKey, mnemonic } from './config'
+import { mnemonic } from './config'
 import { startWatchers } from 'src/watchers/watchers'
 import { wait } from 'src/utils'
 require('dotenv').config()
@@ -22,9 +21,7 @@ const logger = new Logger('TEST')
 test(
   'loadtest',
   async () => {
-    const faucet = new User(faucetPrivateKey)
     const users = generateUsers(NUM_USERS, mnemonic)
-    await prepareAccounts(users, faucet, token, sourceNetwork)
     const { stop, watchers } = startWatchers({
       networks: [sourceNetwork, destNetwork]
     })

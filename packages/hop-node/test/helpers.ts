@@ -6,23 +6,18 @@ import { Chain, Token } from 'src/constants'
 import { HDNode } from '@ethersproject/hdnode'
 import { Watcher } from '@eth-optimism/watcher'
 import {
-  arbitrumGlobalInboxAbi,
   erc20MintableAbi as erc20Abi,
   l1ArbitrumMessengerAbi,
   arbitrumMessengerWrapperAbi as l1ArbitrumMessengerWrapperAbi,
   l1BridgeAbi,
   l1OptimismMessengerAbi,
   optimismMessengerWrapperAbi as l1OptimismMessengerWrapperAbi,
-  l1OptimismTokenBridgeAbi,
   l1PolygonMessengerAbi,
   polygonMessengerWrapperAbi as l1PolygonMessengerWrapperAbi,
-  l1PolygonPosRootChainManagerAbi,
-  l1xDaiForeignOmniBridgeAbi,
   l1xDaiMessengerAbi,
   xDaiMessengerWrapperAbi as l1xDaiMessengerWrapperAbi,
   l2AmmWrapperAbi,
   l2BridgeAbi,
-  l2PolygonChildErc20Abi,
   swapAbi as saddleSwapAbi
 } from '@hop-protocol/abi'
 import { chainSlugToId, getRpcProvider, wait } from 'src/utils'
@@ -581,170 +576,6 @@ export class User {
     return Number(formatUnits(balance.toString(), decimals))
   }
 
-  getCanonicalBridgeContract (destNetwork: string, token: string) {
-    const wallet = this.getWallet(Chain.Ethereum)
-    if (destNetwork === Chain.Arbitrum) {
-      return new Contract(
-        config.tokens[token][destNetwork].l1CanonicalBridge,
-        arbitrumGlobalInboxAbi,
-        wallet
-      )
-    } else if (destNetwork === Chain.Optimism) {
-      return new Contract(
-        config.tokens[token][destNetwork].l1CanonicalBridge,
-        l1OptimismTokenBridgeAbi,
-        wallet
-      )
-    } else if (destNetwork === Chain.xDai) {
-      return new Contract(
-        config.tokens[token][destNetwork].l1CanonicalBridge,
-        l1xDaiForeignOmniBridgeAbi,
-        wallet
-      )
-    } else if (destNetwork === Chain.Polygon) {
-      return new Contract(
-        config.tokens[token][destNetwork].l1PosRootChainManager,
-        l1PolygonPosRootChainManagerAbi,
-        wallet
-      )
-    } else {
-      throw new Error('not implemented')
-    }
-  }
-
-  @queue
-  async convertToCanonicalToken (
-    destNetwork: string,
-    token: string,
-    amount: string | number
-  ) {
-    const recipient = await this.getAddress()
-    const decimals = await getTokenDecimals(token)
-    const value = parseUnits(amount.toString(), decimals)
-    const tokenBridge = this.getCanonicalBridgeContract(destNetwork, token)
-    if (destNetwork === Chain.Arbitrum) {
-      return tokenBridge.depositERC20Message(
-        config.tokens[token][destNetwork].arbChain,
-        config.tokens[token][Chain.Ethereum].l1CanonicalToken,
-        recipient,
-        value,
-        await this.txOverrides(destNetwork)
-      )
-    } else if (destNetwork === Chain.Optimism) {
-      const l1TokenAddress =
-        config.tokens[token][Chain.Ethereum].l1CanonicalToken
-      const l2TokenAddress = config.tokens[token][destNetwork].l2CanonicalToken
-      return tokenBridge.deposit(
-        l1TokenAddress,
-        l2TokenAddress,
-        recipient,
-        value,
-        await this.txOverrides(destNetwork)
-      )
-    } else if (destNetwork === Chain.xDai) {
-      return tokenBridge.relayTokens(
-        config.tokens[token][Chain.Ethereum].l1CanonicalToken,
-        recipient,
-        value,
-        await this.txOverrides(destNetwork)
-      )
-    } else if (destNetwork === Chain.Polygon) {
-      const approveAddress = config.tokens[token][destNetwork].l1PosPredicate
-      logger.debug('approving')
-      const tx = await this.approve(Chain.Ethereum, token, approveAddress)
-      await tx?.wait()
-      logger.debug('waiting')
-      const coder = ethers.utils.defaultAbiCoder
-      const payload = coder.encode(['uint256'], [value])
-      return tokenBridge.depositFor(
-        recipient,
-        config.tokens[token][Chain.Ethereum].l1CanonicalToken,
-        payload,
-        await this.txOverrides(destNetwork)
-      )
-    } else {
-      throw new Error('not implemented')
-    }
-  }
-
-  @queue
-  async polygonCanonicalL1ToL2 (
-    amount: string | number,
-    approve: boolean = false
-  ) {
-    const parsedAmount = parseUnits(amount.toString(), 18)
-    // dummy erc20
-    const tokenAddress = '0x655F2166b0709cd575202630952D71E2bB0d61Af'
-    const bridgeAddress = '0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74'
-    const url = 'https://goerli.rpc.hop.exchange'
-    const provider = new providers.StaticJsonRpcProvider(url)
-    const wallet = new Wallet(this.privateKey, provider)
-    const recipient = await wallet.getAddress()
-    if (approve) {
-      const erc20Predicate = '0xdD6596F2029e6233DEFfaCa316e6A95217d4Dc34'
-      const token = new Contract(tokenAddress, erc20Abi, wallet)
-      const tx = await token.approve(erc20Predicate, parsedAmount)
-      await tx.wait()
-    }
-    const bridge = new Contract(
-      bridgeAddress,
-      l1PolygonPosRootChainManagerAbi,
-      wallet
-    )
-    const coder = ethers.utils.defaultAbiCoder
-    const data = coder.encode(['uint256'], [parsedAmount])
-    return bridge.depositFor(
-      recipient,
-      tokenAddress,
-      data,
-      await this.txOverrides(Chain.Polygon)
-    )
-  }
-
-  @queue
-  async polygonCanonicalL2ToL1 (amount: string | number) {
-    const parsedAmount = parseUnits(amount.toString(), 18)
-    // dummy erc20
-    const tokenAddress = '0xfe4F5145f6e09952a5ba9e956ED0C25e3Fa4c7F1'
-    const url = 'https://rpc-mumbai.maticvigil.com'
-    const provider = new providers.StaticJsonRpcProvider(url)
-    const wallet = new Wallet(this.privateKey, provider)
-    const token = new Contract(tokenAddress, l2PolygonChildErc20Abi, wallet)
-    return token.withdraw(parsedAmount, await this.txOverrides(Chain.Polygon))
-  }
-
-  @queue
-  async polygonCanonicalL2ToL1Exit (txHash: string) {
-    const url = 'https://goerli.rpc.hop.exchange'
-    const provider = new providers.StaticJsonRpcProvider(url)
-    const l1Wallet = new Wallet(this.privateKey, provider)
-    const Web3 = require('web3')
-    const { MaticPOSClient } = require('@maticnetwork/maticjs')
-    const maticPOSClient = new MaticPOSClient({
-      network: 'testnet',
-      maticProvider: new Web3.providers.HttpProvider(
-        'https://rpc-mumbai.maticvigil.com'
-      ),
-      parentProvider: new Web3.providers.HttpProvider(
-        'https://goerli.rpc.hop.exchange'
-      ),
-      posRootChainManager: '0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74',
-      posERC20Predicate: '0xdD6596F2029e6233DEFfaCa316e6A95217d4Dc34'
-    })
-
-    const tx = await maticPOSClient.exitERC20(txHash, {
-      from: await l1Wallet.getAddress(),
-      encodeAbi: true
-    })
-
-    return l1Wallet.sendTransaction({
-      to: tx.to,
-      value: tx.value,
-      data: tx.data,
-      gasLimit: tx.gas
-    })
-  }
-
   @queue
   async canonicalTokenToHopToken (
     destNetwork: string,
@@ -1243,107 +1074,6 @@ export function generateUsers (count: number = 1, mnemonic: string) {
     users.push(user)
   }
 
-  return users
-}
-
-export async function prepareAccount (
-  user: User,
-  sourceNetwork: string,
-  token: string
-) {
-  let balance = await user.getBalance(sourceNetwork, token)
-  if (balance < 1000) {
-    if (sourceNetwork === Chain.xDai) {
-      let tx = await user.mint(Chain.Ethereum, token, 1000)
-      await tx?.wait()
-      const l1CanonicalBridge = user.getCanonicalBridgeContract(
-        sourceNetwork,
-        token
-      )
-      await checkApproval(
-        user,
-        Chain.Ethereum,
-        token,
-        l1CanonicalBridge.address
-      )
-      tx = await user.convertToCanonicalToken(sourceNetwork, token, 1000)
-      logger.info('tx:', tx.hash)
-      await tx?.wait()
-      await wait(120 * 1000)
-    } else {
-      const tx = await user.mint(sourceNetwork, token, 1000)
-      await tx?.wait()
-    }
-    balance = await user.getBalance(sourceNetwork, token)
-  }
-  expect(balance).toBeGreaterThan(0)
-  let spender: string
-  if (sourceNetwork === Chain.Ethereum) {
-    spender = user.getBridgeAddress(sourceNetwork, token)
-  } else {
-    spender = user.getAmmWrapperAddress(sourceNetwork, token)
-  }
-  await checkApproval(user, sourceNetwork, token, spender)
-  // NOTE: xDai SPOA token is required for fees.
-  // faucet: https://blockscout.com/poa/sokol/faucet
-  if (sourceNetwork === Chain.xDai) {
-    const ethBalance = await user.getBalance(sourceNetwork)
-    expect(ethBalance).toBeGreaterThan(0)
-  }
-}
-
-export async function prepareAccounts (
-  users: User[],
-  faucet: User,
-  token: string,
-  network: string,
-  faucetTokensToSend: number = 100
-) {
-  const faucetSendEth = !config.isMainnet
-  let i = 0
-  for (const user of users) {
-    logger.debug('preparing account')
-    const address = await user.getAddress()
-    const yes = [Chain.Ethereum as string, Chain.xDai].includes(network)
-    let checkEth = true
-    if (!config.isMainnet) {
-      checkEth = [Chain.Ethereum as string, Chain.xDai].includes(network)
-    }
-    if (checkEth) {
-      let ethBal = await user.getBalance(network)
-      logger.debug(`#${i} eth:`, ethBal)
-      if (faucetSendEth && ethBal < 0.01) {
-        logger.debug('faucet sending eth')
-        const tx = await faucet.sendEth(0.1, address, network)
-        const receipt = await tx.wait()
-        expect(receipt.status).toBe(1)
-        ethBal = await user.getBalance(network)
-        expect(ethBal).toBeGreaterThanOrEqual(0.1)
-      }
-    }
-    let tokenBal = await user.getBalance(network, token)
-    logger.debug(`#${i} token balance: ${tokenBal}`)
-    if (tokenBal < faucetTokensToSend) {
-      logger.debug('faucet sending tokens')
-      const faucetBalance = await faucet.getBalance(network, token)
-      if (faucetBalance < faucetTokensToSend) {
-        throw new Error(
-          `faucet does not have enough tokens. Have ${faucetBalance}, need ${faucetTokensToSend} ${token} on ${network}`
-        )
-      }
-      const tx = await faucet.sendTokens(
-        network,
-        token,
-        faucetTokensToSend,
-        address
-      )
-      logger.debug('send tokens tx:', tx.hash)
-      await tx.wait()
-      tokenBal = await user.getBalance(network, token)
-    }
-    expect(tokenBal).toBeGreaterThanOrEqual(faucetTokensToSend)
-    i++
-  }
   return users
 }
 

@@ -10,7 +10,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 4982681
       },
       polygon: {
-        l1CanonicalBridge: '0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74',
         l1MessengerWrapper: '0x7a4f56B0Dd21d730604A266245a0067b97605DAE',
         l2CanonicalBridge: '0x6D4dd09982853F08d9966aC3cA4Eb5885F16f2b2',
         l2CanonicalToken: '0x6D4dd09982853F08d9966aC3cA4Eb5885F16f2b2',
@@ -32,7 +31,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 4982739
       },
       polygon: {
-        l1CanonicalBridge: '0xBbD7cBFA79faee899Eaf900F13C9065bF03B1A74',
         l1MessengerWrapper: '0x210942Df6AfE6Cc1d3909B0faa3B3f2D20017F0D',
         l2CanonicalBridge: '0xb224913CE3851b0a0d7C0FB461eEF40f2e31ddb8',
         l2CanonicalToken: '0xb224913CE3851b0a0d7C0FB461eEF40f2e31ddb8',

@@ -6,7 +6,6 @@ export type Bridges = {
       bridgeDeployedBlockNumber: number
     }
     arbitrum: {
-      l1CanonicalBridge: string
       l1MessengerWrapper: string
       l2CanonicalBridge: string
       l2CanonicalToken: string
@@ -18,7 +17,6 @@ export type Bridges = {
       bridgeDeployedBlockNumber: number
     }
     optimism: {
-      l1CanonicalBridge: string
       l1MessengerWrapper: string
       l2CanonicalBridge: string
       l2CanonicalToken: string
@@ -30,7 +28,6 @@ export type Bridges = {
       bridgeDeployedBlockNumber: number
     }
     polygon: {
-      l1CanonicalBridge: string
       l1MessengerWrapper: string
       l2CanonicalBridge: string
       l2CanonicalToken: string
@@ -45,7 +42,6 @@ export type Bridges = {
       bridgeDeployedBlockNumber: number
     }
     xdai: {
-      l1CanonicalBridge: string
       l1MessengerWrapper: string
       l2CanonicalBridge: string
       l2CanonicalToken: string

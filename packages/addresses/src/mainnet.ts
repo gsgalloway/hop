@@ -10,7 +10,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 12650032
       },
       xdai: {
-        l1CanonicalBridge: '0x88ad09518695c6c3712AC10a214bE5109a655671',
         l1MessengerWrapper: '0x12e59C59D282D2C00f3166915BED6DC2F5e2B5C7',
         l2CanonicalBridge: '0xf6A78083ca3e2a662D6dd1703c939c8aCE2e268d',
         l2CanonicalToken: '0xDDAfbb505ad214D7b80b1f830fcCc89B60fb7A83',
@@ -25,7 +24,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 16617211
       },
       polygon: {
-        l1CanonicalBridge: '0xA0c68C638235ee32657e8f720a23ceC1bFc77C77',
         l1MessengerWrapper: '0x10541b07d8Ad2647Dc6cD67abd4c03575dade261',
         l2CanonicalBridge: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
         l2CanonicalToken: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
@@ -47,7 +45,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 12860139
       },
       xdai: {
-        l1CanonicalBridge: '0x88ad09518695c6c3712AC10a214bE5109a655671',
         l1MessengerWrapper: '0xC08055b634D43F2176d721E26A3428D3b7E7DdB5',
         l2CanonicalBridge: '0xf6A78083ca3e2a662D6dd1703c939c8aCE2e268d',
         l2CanonicalToken: '0x4ECaBa5870353805a9F068101A40E0f32ed605C6',
@@ -62,7 +59,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 17155195
       },
       polygon: {
-        l1CanonicalBridge: '0xA0c68C638235ee32657e8f720a23ceC1bFc77C77',
         l1MessengerWrapper: '0xe7C1D08aC706444F356af2D37541d8d57e8C57B6',
         l2CanonicalBridge: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',
         l2CanonicalToken: '0xc2132D05D31c914a87C6611C10748AEb04B58e8F',

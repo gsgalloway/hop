@@ -65,13 +65,6 @@ class PolygonBridgeWatcher extends BaseWatcher {
         )
       }
       const l2Token = new Contract(l2TokenAddress, erc20Abi, this.l2Wallet)
-      /*
-      const l1RootChain = new Contract(
-        l1RootChainAddress,
-        l1PolygonPosRootChainManagerAbi,
-        this.l2Wallet
-      )
-      */
 
       const transactionHashes: any = {}
       l2Token

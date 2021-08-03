@@ -10,7 +10,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 25529054
       },
       xdai: {
-        l1CanonicalBridge: '0xA960d095470f7509955d5402e36d9DB984B5C8E2',
         l1MessengerWrapper: '0x03a7fa6c6603A7079c269dAFe601C1106fD328A8',
         l2CanonicalBridge: '0x40CdfF886715A4012fAD0219D15C98bB149AeF0e',
         l2CanonicalToken: '0x3b0977b9e563F63F219019616BBD12cB1cdFF527',
@@ -25,7 +24,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 21377885
       },
       optimism: {
-        l1CanonicalBridge: '0x531984eEccac4c5e6ABb5439c02d5861110bdA43',
         l1MessengerWrapper: '0x21BB6b9B1e96441f166bfA03EB288F25A47CCc39',
         l2CanonicalBridge: '0x3B88CAb5A989C8AF0931ed171dbF7427BEb2df9A',
         l2CanonicalToken: '0x3b8e53B3aB8E01Fb57D0c9E893bC4d655AA67d84',
@@ -44,7 +42,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 26152536
       },
       xdai: {
-        l1CanonicalBridge: '0xA960d095470f7509955d5402e36d9DB984B5C8E2',
         l1MessengerWrapper: '0xA15E4980998dd62501AF3Fe3Dc9F494c13E7d32d',
         l2CanonicalBridge: '0x40CdfF886715A4012fAD0219D15C98bB149AeF0e',
         l2CanonicalToken: '0x1085e25E7085a8c96aa61DFf368A0e363E7432E6',
@@ -59,7 +56,6 @@ export const addresses: Addresses = {
         bridgeDeployedBlockNumber: 21799634
       }
       // optimism: {
-      // l1CanonicalBridge: '0xC48528a44f2D961D179D69434645E54ac85732a1',
       // l1MessengerWrapper: '0x2cb57494fB3890C754CED2296071F228CAEee35d',
       // l2CanonicalBridge: '0x7B2ab06D22Cd230102215532928f60770376a2B3',
       // l2CanonicalToken: '0xFB6528eFbEe8B900CeBf2c4Cf709b1EF36D46A60',

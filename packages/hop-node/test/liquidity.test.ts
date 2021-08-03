@@ -57,21 +57,7 @@ async function addLiquidity (l2Network: string, amount: number) {
     expect(hopBalance).toBeGreaterThanOrEqual(amount)
     console.log(`hop ${TOKEN} balance: ${hopBalance}`)
   }
-
-  const l2Balance = await user.getBalance(l2Network, TOKEN)
   console.log(`${l2Network} ${TOKEN} balance: ${l1Balance}`)
-
-  if (l2Balance < amount) {
-    const tokenBridge = user.getCanonicalBridgeContract(l2Network, TOKEN)
-    await user.checkApproval(Chain.Ethereum, TOKEN, tokenBridge.address)
-    console.log(
-      `converting ${Chain.Ethereum} ${TOKEN} to ${l2Network} ${TOKEN}`
-    )
-    const tx = await user.convertToCanonicalToken(l2Network, TOKEN, amount / 2)
-    console.log(`convert to canonical token tx: ${tx.hash}`)
-    await tx.wait()
-    await wait(200 * 1000)
-  }
 
   const [
     tokenBalanceBefore,

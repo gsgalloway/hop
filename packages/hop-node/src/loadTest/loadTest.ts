@@ -6,8 +6,7 @@ import { Notifier } from 'src/notifier'
 import {
   User,
   generateUser,
-  generateUsers,
-  prepareAccounts
+  generateUsers
 } from '../../test/helpers'
 import { chainIdToSlug, wait } from 'src/utils'
 import { config } from 'src/config'
@@ -122,20 +121,11 @@ class LoadTest {
                 for (const i in users) {
                   logger.debug(`#${i} account: ${await users[i].getAddress()}`)
                 }
-                const faucetTokensToSend = transferAmount
-                await prepareAccounts(
-                  users,
-                  faucet,
-                  token,
-                  sourceNetwork,
-                  faucetTokensToSend
-                )
 
                 await Promise.all(
                   users.map(async (user: User, i: number) => {
                     let tx: any
                     try {
-                      const recipient = await user.getAddress()
                       const spender = user.getBridgeAddress(
                         sourceNetwork,
                         token
