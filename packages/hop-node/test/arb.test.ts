@@ -1,6 +1,6 @@
 import Logger from 'src/logger'
 import { Chain } from 'src/constants'
-import { User } from './helpers'
+import { User, prepareAccount } from './helpers'
 import { privateKey } from './config'
 import { startWatchers } from 'src/watchers/watchers'
 import { wait } from 'src/utils'
@@ -18,6 +18,7 @@ describe('arb-bot', () => {
     async () => {
       const user = new User(privateKey)
       logger.log('preparing account')
+      await prepareAccount(user, sourceNetwork, TOKEN)
       const tx = await user.mint(sourceNetwork, TOKEN, TRANSFER_AMOUNT)
       await tx.wait()
       logger.log('starting watchers')

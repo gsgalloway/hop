@@ -1077,6 +1077,111 @@ export function generateUsers (count: number = 1, mnemonic: string) {
   return users
 }
 
+export async function prepareAccount (
+  user: User,
+  sourceNetwork: string,
+  token: string
+) {
+  let balance = await user.getBalance(sourceNetwork, token)
+  if (balance < 1000) {
+    if (sourceNetwork === Chain.xDai) {
+      const amount = 1000
+      let tx = await user.mint(Chain.Ethereum, token, amount)
+      await tx?.wait()
+
+      const l1BridgeAddress = user.getBridgeAddress(Chain.Ethereum, token)
+      await checkApproval(
+        user,
+        Chain.Ethereum,
+        token,
+        l1BridgeAddress
+      )
+      tx = await user.send(
+        Chain.Ethereum,
+        sourceNetwork,
+        token,
+        amount
+      )
+      logger.info('tx:', tx.hash)
+      await tx?.wait()
+      await wait(120 * 1000)
+    } else {
+      const tx = await user.mint(sourceNetwork, token, 1000)
+      await tx?.wait()
+    }
+    balance = await user.getBalance(sourceNetwork, token)
+  }
+  expect(balance).toBeGreaterThan(0)
+  let spender: string
+  if (sourceNetwork === Chain.Ethereum) {
+    spender = user.getBridgeAddress(sourceNetwork, token)
+  } else {
+    spender = user.getAmmWrapperAddress(sourceNetwork, token)
+  }
+  await checkApproval(user, sourceNetwork, token, spender)
+  // NOTE: xDai SPOA token is required for fees.
+  // faucet: https://blockscout.com/poa/sokol/faucet
+  if (sourceNetwork === Chain.xDai) {
+    const ethBalance = await user.getBalance(sourceNetwork)
+    expect(ethBalance).toBeGreaterThan(0)
+  }
+}
+
+export async function prepareAccounts (
+  users: User[],
+  faucet: User,
+  token: string,
+  network: string,
+  faucetTokensToSend: number = 100
+) {
+  const faucetSendEth = !config.isMainnet
+  let i = 0
+  for (const user of users) {
+    logger.debug('preparing account')
+    const address = await user.getAddress()
+    const yes = [Chain.Ethereum as string, Chain.xDai].includes(network)
+    let checkEth = true
+    if (!config.isMainnet) {
+      checkEth = [Chain.Ethereum as string, Chain.xDai].includes(network)
+    }
+    if (checkEth) {
+      let ethBal = await user.getBalance(network)
+      logger.debug(`#${i} eth:`, ethBal)
+      if (faucetSendEth && ethBal < 0.01) {
+        logger.debug('faucet sending eth')
+        const tx = await faucet.sendEth(0.1, address, network)
+        const receipt = await tx.wait()
+        expect(receipt.status).toBe(1)
+        ethBal = await user.getBalance(network)
+        expect(ethBal).toBeGreaterThanOrEqual(0.1)
+      }
+    }
+    let tokenBal = await user.getBalance(network, token)
+    logger.debug(`#${i} token balance: ${tokenBal}`)
+    if (tokenBal < faucetTokensToSend) {
+      logger.debug('faucet sending tokens')
+      const faucetBalance = await faucet.getBalance(network, token)
+      if (faucetBalance < faucetTokensToSend) {
+        throw new Error(
+          `faucet does not have enough tokens. Have ${faucetBalance}, need ${faucetTokensToSend} ${token} on ${network}`
+        )
+      }
+      const tx = await faucet.sendTokens(
+        network,
+        token,
+        faucetTokensToSend,
+        address
+      )
+      logger.debug('send tokens tx:', tx.hash)
+      await tx.wait()
+      tokenBal = await user.getBalance(network, token)
+    }
+    expect(tokenBal).toBeGreaterThanOrEqual(faucetTokensToSend)
+    i++
+  }
+  return users
+}
+
 export async function getBalances (
   users: User[],
   token: string,
