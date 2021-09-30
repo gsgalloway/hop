@@ -8,17 +8,20 @@ export default {
   component: TxStatusModal,
 } as ComponentMeta<typeof TxStatusModal>
 
-export const simple: ComponentStory<typeof TxStatusModal> = () => {
+const Template: ComponentStory<typeof TxStatusModal> = args => {
   function handleClose() {
     console.log('close')
   }
 
   const tx = {
-    networkName: 'ethereum',
-    token: {
-      symbol: '',
-    },
+    // networkName: 'ethereum',
+    // token: {
+    //   symbol: '',
+    // },
   }
 
-  return <TxStatusModal onClose={handleClose} tx={tx as Transaction} />
+  return <TxStatusModal onClose={handleClose} tx={tx as Transaction} {...args} />
 }
+
+export const Basic = Template.bind({})
+Basic.args = {}

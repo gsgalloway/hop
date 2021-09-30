@@ -7,9 +7,9 @@ export default {
   component: Box,
 } as ComponentMeta<typeof Box>
 
-export const box: ComponentStory<typeof Box> = () => (
-  <div>
-    <Box>Box</Box>
-    <Box border={1}>Box border=1</Box>
-  </div>
-)
+const Template: ComponentStory<typeof Box> = args => <Box {...args}>Box</Box>
+
+export const Basic = Template.bind({})
+Basic.args = {
+  border: '1px solid black',
+}
