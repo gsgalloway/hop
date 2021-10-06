@@ -35,6 +35,7 @@ import useApprove from 'src/hooks/useApprove'
 import { reactAppNetwork } from 'src/config'
 import InfoTooltip from 'src/components/infoTooltip'
 import { amountToBN, formatError } from 'src/utils/format'
+import { createTransaction } from 'src/utils/createTransaction'
 
 const useStyles = makeStyles(theme => ({
   header: {
@@ -579,13 +580,28 @@ const Send: FC = () => {
       let tx: Transaction | null = null
       if (fromNetwork.isLayer1) {
         tx = await sendl1ToL2()
+        logger.debug(`sendl1ToL2 tx:`, tx)
       } else if (!fromNetwork.isLayer1 && toNetwork.isLayer1) {
         tx = await sendl2ToL1()
+        logger.debug(`sendl2ToL1 tx:`, tx)
       } else {
         tx = await sendl2ToL2()
+        logger.debug(`sendl2ToL2 tx:`, tx)
       }
 
       if (tx) {
+        const sourceChain = sdk.Chain.fromSlug(fromNetwork.slug)
+        const destChain = sdk.Chain.fromSlug(toNetwork.slug)
+        const watcher = sdk.watch(tx.hash, sourceToken!.symbol, sourceChain, destChain)
+
+        watcher.on(sdk.Event.SourceTxReceipt, async data => {
+          console.log(`source tx receipt event data:`, data)
+        })
+
+        watcher.on(sdk.Event.DestinationTxReceipt, async data => {
+          console.log(`dest tx receipt event data:`, data)
+        })
+
         setTx(tx)
       }
     } catch (err: any) {
@@ -639,12 +655,7 @@ const Send: FC = () => {
 
     let txObj: Transaction | null = null
     if (tx?.hash && fromNetwork) {
-      txObj = new Transaction({
-        hash: tx?.hash,
-        networkName: fromNetwork?.slug,
-        destNetworkName: toNetwork?.slug,
-        token: sourceToken,
-      })
+      txObj = createTransaction(tx, fromNetwork, toNetwork, sourceToken)
       txHistory?.addTransaction(txObj)
     }
 
@@ -709,12 +720,7 @@ const Send: FC = () => {
 
     let txObj: Transaction | null = null
     if (tx?.hash && fromNetwork) {
-      txObj = new Transaction({
-        hash: tx?.hash,
-        networkName: fromNetwork?.slug,
-        destNetworkName: toNetwork?.slug,
-        token: sourceToken,
-      })
+      txObj = createTransaction(tx, fromNetwork, toNetwork, sourceToken)
       txHistory?.addTransaction(txObj)
     }
 
@@ -778,12 +784,7 @@ const Send: FC = () => {
 
     let txObj: Transaction | null = null
     if (tx?.hash && fromNetwork) {
-      txObj = new Transaction({
-        hash: tx?.hash,
-        networkName: fromNetwork?.slug,
-        destNetworkName: toNetwork?.slug,
-        token: sourceToken,
-      })
+      txObj = createTransaction(tx, fromNetwork, toNetwork, sourceToken)
       txHistory?.addTransaction(txObj)
     }
 
